@@ -1,0 +1,26 @@
+FROM python:3.7-slim-buster
+
+ENV BACKEND=/usr/src/app/backend
+
+RUN mkdir -p $BACKEND
+
+# set work directory
+WORKDIR $BACKEND
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install dependencies
+RUN pip install --upgrade pip
+
+COPY . $BACKEND
+RUN pip install -r requirements.txt
+# RUN python manage.py collectstatic --no-input
+
+# copy entrypoint.sh
+COPY ./entrypoint.sh $BACKEND
+
+# # run entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+CMD ["/bin/bash", "/usr/src/app/backend/entrypoint.sh"]

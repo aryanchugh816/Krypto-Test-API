@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+      cache_from:
+        - "${WEB_IMAGE}"
+    image: "${WEB_IMAGE}"
+    command: > 
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate --no-input &&
+             python manage.py collectstatic --no-input
+             gunicorn web_app.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - django_static_volume:/usr/src/app/backend/backend_static
+      - django_media_volume:/usr/src/app/backend/backend_media
+    expose:
+      - 8000
+    restart: "on-failure"
+  react-nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      cache_from:
+        - "${REACT_NGINX_IMAGE}"
+    image: "${REACT_NGINX_IMAGE}"
+    volumes:
+      - django_static_volume:/usr/src/app/backend/backend_static
+      - django_media_volume:/usr/src/app/backend/backend_media
+      - react_static_volume:/usr/src/app/frontend/build/static
+    ports:
+      - 80:80
+    restart: "on-failure"
+    depends_on:
+      - web
+
+volumes:
+  django_static_volume:
+  django_media_volume:
+  react_static_volume:

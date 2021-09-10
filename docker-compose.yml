@@ -1,0 +1,55 @@
+version: "3.7"
+
+services:
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+    command: >
+      sh -c " python manage.py collectstatic --no-input &&
+              python manage.py makemigrations --no-input &&
+              python manage.py migrate --no-input &&
+              # python manage.py createsuperuser --username=chugh --email=chugharyan816@gmail.com --no-input &&
+              gunicorn web_app.wsgi:application --bind 0.0.0.0:8000 --timeout 600 --workers=3 --threads=3"
+    volumes:
+      - ./app/:/usr/src/app/backend/
+      - django_static_volume:/usr/src/app/backend/backend_static
+      - django_media_volume:/usr/src/app/backend/backend_media
+    expose:
+      - 8000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    env_file: .env.dev
+    depends_on:
+      - db
+    restart: "on-failure"
+
+  db:
+    image: postgres:12.2-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.prod.db
+    restart: "on-failure"
+  
+  react-nginx:
+    # image: docker.pkg.github.com/aryanchugh816/ai-bloc/nginx
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - django_static_volume:/backend_static
+      - django_media_volume:/backend_media
+      - react_static_volume:/usr/src/app/frontend/build/static
+    ports:
+      - 80:80
+    depends_on:
+      - web
+    restart: "on-failure"
+
+volumes:
+  postgres_data:
+  django_static_volume:
+  django_media_volume:
+  react_static_volume:
+  
