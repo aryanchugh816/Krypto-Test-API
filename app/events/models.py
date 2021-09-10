@@ -12,4 +12,4 @@ class Events(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.owner+"_"+self.coin_id+"_"+self.target_price)
+        return str(str(self.owner.id)+"_"+self.coin_id+"_"+str(self.target_price))

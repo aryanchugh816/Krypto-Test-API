@@ -142,6 +142,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER")
 
 CORS_ALLOW_HEADERS = list(default_headers)
 CORS_ORIGIN_ALLOW_ALL = False
@@ -165,8 +166,8 @@ STATICFILES_FINDERS = [
 CELERY_BROKER_URL = "amqp://admin:mypass@rabbitmq:5672"
 CELERY_RESULT_BACKEND = "redis://redis:6379"
 CELERY_BEAT_SCHEDULE = {
-    "sample_task": {
-        "task": "web_app.tasks.sample_task",
+    "get_prices": {
+        "task": "web_app.tasks.get_prices",
         "schedule": crontab(minute="*/1"),
     },
 }
